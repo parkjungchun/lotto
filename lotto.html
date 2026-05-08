@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="로또번호">
+  <title>🍀 로또 번호</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f5f5f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 30px;
+      color: #1a1a1a;
+      text-align: center;
+      margin-bottom: 0.2rem;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .sets-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 1.4rem;
+    }
+
+    .set-row {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .set-row.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .set-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #aaa;
+      min-width: 38px;
+    }
+
+    .balls {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .ball {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .ball.r1 { background: #FAEEDA; color: #633806; }
+    .ball.r2 { background: #E6F1FB; color: #0C447C; }
+    .ball.r3 { background: #EAF3DE; color: #3B6D11; }
+
+    .gen-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 18px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .gen-btn:active { transform: scale(0.97); opacity: 0.85; }
+
+    .hint {
+      font-size: 11px;
+      color: #bbb;
+      text-align: center;
+      margin-top: 1rem;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">🍀 로또 번호</div>
+    <div class="subtitle">구간 분산 + 연속 번호 조건 적용</div>
+    <div class="sets-container" id="sets"></div>
+    <button class="gen-btn" onclick="generate()">번호 생성하기</button>
+    <div class="hint">
+      노란공 1~15 · 파란공 16~30 · 초록공 31~45<br>
+      연속 번호 최소 1쌍 포함
+    </div>
+  </div>
+
+  <script>
+    function generateSet() {
+      while (true) {
+        let nums = [];
+        while (nums.length < 6) {
+          let n = Math.floor(Math.random() * 45) + 1;
+          if (!nums.includes(n)) nums.push(n);
+        }
+        nums.sort((a, b) => a - b);
+        if (!nums.some(n => n >= 1 && n <= 15)) continue;
+        if (!nums.some(n => n >= 16 && n <= 30)) continue;
+        if (!nums.some(n => n >= 31 && n <= 45)) continue;
+        let hasConsec = nums.some((n, i) => i < nums.length - 1 && nums[i+1] === n+1);
+        if (!hasConsec) continue;
+        return nums;
+      }
+    }
+
+    function ballClass(n) {
+      if (n <= 15) return 'ball r1';
+      if (n <= 30) return 'ball r2';
+      return 'ball r3';
+    }
+
+    function generate() {
+      const container = document.getElementById('sets');
+      container.innerHTML = '';
+      const labels = ['A', 'B', 'C', 'D', 'E'];
+      for (let i = 0; i < 5; i++) {
+        const nums = generateSet();
+        const row = document.createElement('div');
+        row.className = 'set-row';
+        const ballsHtml = nums.map(n => `<div class="${ballClass(n)}">${n}</div>`).join('');
+        row.innerHTML = `<div class="set-label">세트 ${labels[i]}</div><div class="balls">${ballsHtml}</div>`;
+        container.appendChild(row);
+        setTimeout(() => row.classList.add('visible'), i * 80);
+      }
+    }
+
+    generate();
+  </script>
+</body>
+</html>

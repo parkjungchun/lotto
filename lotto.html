@@ -123,12 +123,12 @@
 <body>
   <div class="wrap">
     <div class="title">🍀 로또 번호</div>
-    <div class="subtitle">구간 분산 + 연속 번호 조건 적용</div>
+    <div class="subtitle">1222회차 데이터 분석 기반</div>
     <div class="sets-container" id="sets"></div>
     <button class="gen-btn" onclick="generate()">번호 생성하기</button>
     <div class="hint">
       노란공 1~15 · 파란공 16~30 · 초록공 31~45<br>
-      연속 번호 최소 1쌍 포함
+      구간 분산 · 홀짝 균형 · 합계 100~170
     </div>
   </div>
 
@@ -141,11 +141,20 @@
           if (!nums.includes(n)) nums.push(n);
         }
         nums.sort((a, b) => a - b);
+
+        // 조건1: 구간별 최소 1개 (각 구간 33% 균등)
         if (!nums.some(n => n >= 1 && n <= 15)) continue;
         if (!nums.some(n => n >= 16 && n <= 30)) continue;
         if (!nums.some(n => n >= 31 && n <= 45)) continue;
-        let hasConsec = nums.some((n, i) => i < nums.length - 1 && nums[i+1] === n+1);
-        if (!hasConsec) continue;
+
+        // 조건2: 홀수 2~4개 (홀3짝3이 33%, 홀4짝2가 26%, 홀2짝4가 22%)
+        let odd = nums.filter(n => n % 2 === 1).length;
+        if (odd < 2 || odd > 4) continue;
+
+        // 조건3: 합계 100~170 (전체 73.2% 해당)
+        let sum = nums.reduce((a, b) => a + b, 0);
+        if (sum < 100 || sum > 170) continue;
+
         return nums;
       }
     }

@@ -6,9 +6,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="로또번호">
-  <title>🍀 로또 번호</title>
+  <title>🍀 로또 번호 생성기</title>
   <link rel="apple-touch-icon" href="icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #f5f5f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -19,17 +19,20 @@
     .set-row { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 10px; }
     .set-label { font-size: 12px; font-weight: 500; color: #aaa; min-width: 38px; }
     .balls { display: flex; gap: 7px; flex-wrap: wrap; }
-    .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; }
-    .ball.r1 { background: #FAEEDA; color: #633806; }
-    .ball.r2 { background: #E6F1FB; color: #0C447C; }
-    .ball.r3 { background: #EAF3DE; color: #3B6D11; }
     
+    /* 공 스타일 수정 */
+    .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .ball.c1 { background: #fbc400; } /* 1~10: 노랑 */
+    .ball.c2 { background: #69c8f2; } /* 11~20: 파랑 */
+    .ball.c3 { background: #ff7272; } /* 21~30: 빨강 */
+    .ball.c4 { background: #aaaaaa; } /* 31~40: 회색 */
+    .ball.c5 { background: #b0d840; } /* 41~45: 초록 */
+
     .btn-group { display: flex; flex-direction: column; gap: 8px; }
     .gen-btn { width: 100%; padding: 1rem; background: #1a1a1a; color: #fff; border: none; border-radius: 14px; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 1px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
     .gen-btn:active:not(:disabled) { transform: scale(0.97); opacity: 0.85; }
     .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     
-    /* 초기화 버튼 스타일 */
     .reset-btn { width: 100%; padding: 0.6rem; background: none; color: #bbb; border: 1px solid #ddd; border-radius: 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
     .reset-btn:hover { background: #eee; color: #666; }
 
@@ -40,7 +43,7 @@
 <body>
   <div class="wrap">
     <div class="title">🍀 로또 번호</div>
-    <div class="subtitle">1222회차 데이터 분석 기반</div>
+    <div class="subtitle">통계 데이터 분석 기반</div>
     <div class="sets-container" id="sets"></div>
     
     <div class="btn-group">
@@ -48,7 +51,10 @@
       <button class="reset-btn" id="resetBtn" onclick="resetData()">데이터 초기화</button>
     </div>
 
-    <div class="hint">노란공 1~15 · 파란공 16~30 · 초록공 31~45<br>구간 분산 · 홀짝 균형 · 합계 100~170</div>
+    <div class="hint">
+      노랑(1-10) · 파랑(11-20) · 빨강(21-30) · 회색(31-40) · 초록(41-45)<br>
+      구간 분산 · 홀짝 균형 · 합계 100~170
+    </div>
     <div class="week-info" id="weekInfo"></div>
   </div>
 
@@ -73,24 +79,12 @@
 
     function isUsedThisWeek() { return localStorage.getItem(getWeekKey()) === 'used'; }
 
-    // 초기화 함수 추가
     function resetData() {
-      if (!confirm("이번 주에 생성된 번호를 삭제하고 초기화하시겠습니까?")) return;
-      
+      if (!confirm("저장된 번호를 삭제하고 초기화하시겠습니까?")) return;
       localStorage.removeItem(getWeekKey());
       localStorage.removeItem(getWeekKey() + '_nums');
-      
       document.getElementById('sets').innerHTML = '';
       updateBtn();
-      alert("초기화되었습니다. 새로운 번호를 생성할 수 있습니다.");
-    }
-
-    function getNextSunday() {
-      const now = new Date();
-      const next = new Date(now);
-      next.setDate(now.getDate() + (7 - now.getDay()));
-      next.setHours(0, 0, 0, 0);
-      return next;
     }
 
     function updateBtn() {
@@ -99,7 +93,10 @@
       if (isUsedThisWeek()) {
         btn.disabled = true;
         btn.textContent = '이번 주 번호 생성 완료';
-        const next = getNextSunday();
+        const now = new Date();
+        const next = new Date(now);
+        next.setDate(now.getDate() + (7 - now.getDay()));
+        next.setHours(0, 0, 0, 0);
         info.textContent = '다음 생성 가능: ' + (next.getMonth()+1) + '월 ' + next.getDate() + '일 (일) 00시';
       } else {
         btn.disabled = false;
@@ -116,21 +113,31 @@
           if (!nums.includes(n)) nums.push(n);
         }
         nums.sort((a, b) => a - b);
+        
+        // 필터 1: 구간 분산 (1-15, 16-30, 31-45 각 1개 이상)
         if (!nums.some(n => n >= 1 && n <= 15)) continue;
         if (!nums.some(n => n >= 16 && n <= 30)) continue;
         if (!nums.some(n => n >= 31 && n <= 45)) continue;
+        
+        // 필터 2: 홀짝 균형 (홀수 2~4개)
         let odd = nums.filter(n => n % 2 === 1).length;
         if (odd < 2 || odd > 4) continue;
+        
+        // 필터 3: 합계 (100~170)
         let sum = nums.reduce((a, b) => a + b, 0);
         if (sum < 100 || sum > 170) continue;
+        
         return nums;
       }
     }
 
+    // 색상 클래스 분류 수정 (10단위)
     function ballClass(n) {
-      if (n <= 15) return 'ball r1';
-      if (n <= 30) return 'ball r2';
-      return 'ball r3';
+      if (n <= 10) return 'ball c1';
+      if (n <= 20) return 'ball c2';
+      if (n <= 30) return 'ball c3';
+      if (n <= 40) return 'ball c4';
+      return 'ball c5';
     }
 
     function renderSets(sets, animate) {

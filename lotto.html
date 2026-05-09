@@ -16,8 +16,7 @@
     .title { font-family: 'Black Han Sans', sans-serif; font-size: 30px; color: #1a1a1a; text-align: center; margin-bottom: 0.2rem; }
     .subtitle { font-size: 12px; color: #999; text-align: center; margin-bottom: 1.8rem; }
     .sets-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.4rem; min-height: 60px; }
-    .set-row { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 10px; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s ease; }
-    .set-row.visible { opacity: 1; transform: translateY(0); }
+    .set-row { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 10px; }
     .set-label { font-size: 12px; font-weight: 500; color: #aaa; min-width: 38px; }
     .balls { display: flex; gap: 7px; flex-wrap: wrap; }
     .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; }
@@ -48,8 +47,15 @@
       sunday.setHours(0, 0, 0, 0);
       return 'lotto_week_' + sunday.getFullYear() + '_' + sunday.getMonth() + '_' + sunday.getDate();
     }
+    function getSavedNums() {
+      const data = localStorage.getItem(getWeekKey() + '_nums');
+      return data ? JSON.parse(data) : null;
+    }
+    function saveNums(sets) {
+      localStorage.setItem(getWeekKey() + '_nums', JSON.stringify(sets));
+      localStorage.setItem(getWeekKey(), 'used');
+    }
     function isUsedThisWeek() { return localStorage.getItem(getWeekKey()) === 'used'; }
-    function markUsed() { localStorage.setItem(getWeekKey(), 'used'); }
     function getNextSunday() {
       const now = new Date();
       const next = new Date(now);
@@ -94,23 +100,32 @@
       if (n <= 30) return 'ball r2';
       return 'ball r3';
     }
-    function generate() {
-      if (isUsedThisWeek()) return;
+    function renderSets(sets, animate) {
       const container = document.getElementById('sets');
       container.innerHTML = '';
       const labels = ['A', 'B', 'C', 'D', 'E'];
-      for (let i = 0; i < 5; i++) {
-        const nums = generateSet();
+      sets.forEach((nums, i) => {
         const row = document.createElement('div');
         row.className = 'set-row';
+        if (animate) { row.style.opacity = '0'; row.style.transform = 'translateY(10px)'; row.style.transition = 'opacity 0.35s ease, transform 0.35s ease'; }
         const ballsHtml = nums.map(n => '<div class="' + ballClass(n) + '">' + n + '</div>').join('');
         row.innerHTML = '<div class="set-label">세트 ' + labels[i] + '</div><div class="balls">' + ballsHtml + '</div>';
         container.appendChild(row);
-        setTimeout(() => row.classList.add('visible'), i * 80);
-      }
-      markUsed();
+        if (animate) setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'translateY(0)'; }, i * 80);
+      });
+    }
+    function generate() {
+      if (isUsedThisWeek()) return;
+      const sets = [];
+      for (let i = 0; i < 5; i++) sets.push(generateSet());
+      renderSets(sets, true);
+      saveNums(sets);
       updateBtn();
     }
+
+    // 초기화 - 저장된 번호 있으면 바로 표시
+    const saved = getSavedNums();
+    if (saved) renderSets(saved, false);
     updateBtn();
   </script>
 </body>

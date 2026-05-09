@@ -23,11 +23,18 @@
     .ball.r1 { background: #FAEEDA; color: #633806; }
     .ball.r2 { background: #E6F1FB; color: #0C447C; }
     .ball.r3 { background: #EAF3DE; color: #3B6D11; }
+    
+    .btn-group { display: flex; flex-direction: column; gap: 8px; }
     .gen-btn { width: 100%; padding: 1rem; background: #1a1a1a; color: #fff; border: none; border-radius: 14px; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 1px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
     .gen-btn:active:not(:disabled) { transform: scale(0.97); opacity: 0.85; }
     .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    
+    /* 초기화 버튼 스타일 */
+    .reset-btn { width: 100%; padding: 0.6rem; background: none; color: #bbb; border: 1px solid #ddd; border-radius: 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .reset-btn:hover { background: #eee; color: #666; }
+
     .hint { font-size: 11px; color: #bbb; text-align: center; margin-top: 1rem; line-height: 1.7; }
-    .week-info { font-size: 11px; color: #bbb; text-align: center; margin-top: 0.5rem; }
+    .week-info { font-size: 11px; color: #bbb; text-align: center; margin-top: 0.5rem; min-height: 1.2em; }
   </style>
 </head>
 <body>
@@ -35,10 +42,16 @@
     <div class="title">🍀 로또 번호</div>
     <div class="subtitle">1222회차 데이터 분석 기반</div>
     <div class="sets-container" id="sets"></div>
-    <button class="gen-btn" id="genBtn" onclick="generate()">번호 생성하기</button>
+    
+    <div class="btn-group">
+      <button class="gen-btn" id="genBtn" onclick="generate()">번호 생성하기</button>
+      <button class="reset-btn" id="resetBtn" onclick="resetData()">데이터 초기화</button>
+    </div>
+
     <div class="hint">노란공 1~15 · 파란공 16~30 · 초록공 31~45<br>구간 분산 · 홀짝 균형 · 합계 100~170</div>
     <div class="week-info" id="weekInfo"></div>
   </div>
+
   <script>
     function getWeekKey() {
       const now = new Date();
@@ -47,15 +60,31 @@
       sunday.setHours(0, 0, 0, 0);
       return 'lotto_week_' + sunday.getFullYear() + '_' + sunday.getMonth() + '_' + sunday.getDate();
     }
+
     function getSavedNums() {
       const data = localStorage.getItem(getWeekKey() + '_nums');
       return data ? JSON.parse(data) : null;
     }
+
     function saveNums(sets) {
       localStorage.setItem(getWeekKey() + '_nums', JSON.stringify(sets));
       localStorage.setItem(getWeekKey(), 'used');
     }
+
     function isUsedThisWeek() { return localStorage.getItem(getWeekKey()) === 'used'; }
+
+    // 초기화 함수 추가
+    function resetData() {
+      if (!confirm("이번 주에 생성된 번호를 삭제하고 초기화하시겠습니까?")) return;
+      
+      localStorage.removeItem(getWeekKey());
+      localStorage.removeItem(getWeekKey() + '_nums');
+      
+      document.getElementById('sets').innerHTML = '';
+      updateBtn();
+      alert("초기화되었습니다. 새로운 번호를 생성할 수 있습니다.");
+    }
+
     function getNextSunday() {
       const now = new Date();
       const next = new Date(now);
@@ -63,6 +92,7 @@
       next.setHours(0, 0, 0, 0);
       return next;
     }
+
     function updateBtn() {
       const btn = document.getElementById('genBtn');
       const info = document.getElementById('weekInfo');
@@ -77,6 +107,7 @@
         info.textContent = '';
       }
     }
+
     function generateSet() {
       while (true) {
         let nums = [];
@@ -95,11 +126,13 @@
         return nums;
       }
     }
+
     function ballClass(n) {
       if (n <= 15) return 'ball r1';
       if (n <= 30) return 'ball r2';
       return 'ball r3';
     }
+
     function renderSets(sets, animate) {
       const container = document.getElementById('sets');
       container.innerHTML = '';
@@ -114,6 +147,7 @@
         if (animate) setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'translateY(0)'; }, i * 80);
       });
     }
+
     function generate() {
       if (isUsedThisWeek()) return;
       const sets = [];
@@ -123,7 +157,6 @@
       updateBtn();
     }
 
-    // 초기화 - 저장된 번호 있으면 바로 표시
     const saved = getSavedNums();
     if (saved) renderSets(saved, false);
     updateBtn();

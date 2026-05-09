@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23f5f5f0%22/><text y=%22.9em%22 font-size=%2280%22>🍀</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍀</text></svg>">
+  
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="로또번호">
+  
   <title>🍀 로또 번호 생성기</title>
-
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍀</text></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍀</text></svg>">
-
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,27 +23,15 @@
     .set-row { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 10px; }
     .set-label { font-size: 12px; font-weight: 500; color: #aaa; min-width: 38px; }
     .balls { display: flex; gap: 7px; flex-wrap: wrap; }
-    
-    /* 10단위 색상 공 스타일 */
     .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-    .ball.c1 { background: #fbc400; }
-    .ball.c2 { background: #69c8f2; }
-    .ball.c3 { background: #ff7272; }
-    .ball.c4 { background: #aaaaaa; }
-    .ball.c5 { background: #b0d840; }
-
+    .ball.c1 { background: #fbc400; } .ball.c2 { background: #69c8f2; } .ball.c3 { background: #ff7272; } .ball.c4 { background: #aaaaaa; } .ball.c5 { background: #b0d840; }
     .btn-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
-    .gen-btn { width: 100%; padding: 1rem; background: #1a1a1a; color: #fff; border: none; border-radius: 14px; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 1px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
-    .gen-btn:active:not(:disabled) { transform: scale(0.97); opacity: 0.85; }
+    .gen-btn { width: 100%; padding: 1rem; background: #1a1a1a; color: #fff; border: none; border-radius: 14px; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 1px; cursor: pointer; }
     .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    
     .reset-btn { width: 100%; padding: 0.6rem; background: none; color: #bbb; border: 1px solid #ddd; border-radius: 10px; font-size: 11px; cursor: pointer; }
-
-    /* 상세 로직 보기 스타일 */
     .logic-container { text-align: center; margin-top: 10px; }
     .logic-toggle { background: none; border: none; color: #ccc; font-size: 11px; text-decoration: underline; cursor: pointer; margin-bottom: 8px; }
     .logic-content { display: none; background: #ecece7; padding: 12px; border-radius: 10px; font-size: 11px; color: #888; line-height: 1.6; text-align: left; }
-    
     .week-info { font-size: 11px; color: #bbb; text-align: center; margin-top: 0.5rem; min-height: 1.2em; }
   </style>
 </head>
@@ -51,12 +40,10 @@
     <div class="title">🍀 로또 번호</div>
     <div class="subtitle">통계 데이터 분석 기반</div>
     <div class="sets-container" id="sets"></div>
-    
     <div class="btn-group">
       <button class="gen-btn" id="genBtn" onclick="generate()">번호 생성하기</button>
       <button class="reset-btn" onclick="resetData()">데이터 초기화</button>
     </div>
-
     <div class="logic-container">
       <button class="logic-toggle" onclick="toggleLogic()">상세 로직 보기</button>
       <div id="logicContent" class="logic-content">
@@ -65,62 +52,49 @@
         • <b>합계 필터</b>: 선택된 6개 번호의 총합을 100~170 사이로 제한
       </div>
     </div>
-    
     <div class="week-info" id="weekInfo"></div>
   </div>
-
   <script>
     function toggleLogic() {
       const content = document.getElementById('logicContent');
       content.style.display = (content.style.display === 'block') ? 'none' : 'block';
     }
-
     function getWeekKey() {
       const now = new Date();
-      const sunday = new Date(now);
-      sunday.setDate(now.getDate() - now.getDay());
-      sunday.setHours(0, 0, 0, 0);
-      return 'lotto_week_' + sunday.getFullYear() + '_' + sunday.getMonth() + '_' + sunday.getDate();
+      const sun = new Date(now);
+      sun.setDate(now.getDate() - now.getDay());
+      sun.setHours(0, 0, 0, 0);
+      return 'lotto_week_' + sun.getFullYear() + '_' + sun.getMonth() + '_' + sun.getDate();
     }
-
     function getSavedNums() {
       const data = localStorage.getItem(getWeekKey() + '_nums');
       return data ? JSON.parse(data) : null;
     }
-
     function saveNums(sets) {
       localStorage.setItem(getWeekKey() + '_nums', JSON.stringify(sets));
       localStorage.setItem(getWeekKey(), 'used');
     }
-
     function isUsedThisWeek() { return localStorage.getItem(getWeekKey()) === 'used'; }
-
     function resetData() {
-      if (!confirm("저장된 번호를 삭제하고 초기화하시겠습니까?")) return;
+      if (!confirm("데이터를 초기화하시겠습니까?")) return;
       localStorage.removeItem(getWeekKey());
       localStorage.removeItem(getWeekKey() + '_nums');
       document.getElementById('sets').innerHTML = '';
       updateBtn();
     }
-
     function updateBtn() {
       const btn = document.getElementById('genBtn');
       const info = document.getElementById('weekInfo');
       if (isUsedThisWeek()) {
-        btn.disabled = true;
-        btn.textContent = '이번 주 번호 생성 완료';
-        const now = new Date();
-        const next = new Date(now);
-        next.setDate(now.getDate() + (7 - now.getDay()));
+        btn.disabled = true; btn.textContent = '이번 주 생성 완료';
+        const next = new Date();
+        next.setDate(next.getDate() + (7 - next.getDay()));
         next.setHours(0, 0, 0, 0);
-        info.textContent = '다음 생성 가능: ' + (next.getMonth()+1) + '월 ' + next.getDate() + '일 (일) 00시';
+        info.textContent = '다음 생성: ' + (next.getMonth()+1) + '월 ' + next.getDate() + '일 (일) 00시';
       } else {
-        btn.disabled = false;
-        btn.textContent = '번호 생성하기';
-        info.textContent = '';
+        btn.disabled = false; btn.textContent = '번호 생성하기'; info.textContent = '';
       }
     }
-
     function generateSet() {
       while (true) {
         let nums = [];
@@ -134,20 +108,13 @@
         if (!nums.some(n => n >= 31 && n <= 45)) continue;
         let odd = nums.filter(n => n % 2 === 1).length;
         if (odd < 2 || odd > 4) continue;
-        let sum = nums.reduce((a, b) => a + b, 0);
-        if (sum < 100 || sum > 170) continue;
+        if (nums.reduce((a, b) => a + b, 0) < 100 || nums.reduce((a, b) => a + b, 0) > 170) continue;
         return nums;
       }
     }
-
     function ballClass(n) {
-      if (n <= 10) return 'ball c1';
-      if (n <= 20) return 'ball c2';
-      if (n <= 30) return 'ball c3';
-      if (n <= 40) return 'ball c4';
-      return 'ball c5';
+      if (n <= 10) return 'ball c1'; if (n <= 20) return 'ball c2'; if (n <= 30) return 'ball c3'; if (n <= 40) return 'ball c4'; return 'ball c5';
     }
-
     function renderSets(sets, animate) {
       const container = document.getElementById('sets');
       container.innerHTML = '';
@@ -155,23 +122,17 @@
       sets.forEach((nums, i) => {
         const row = document.createElement('div');
         row.className = 'set-row';
-        if (animate) { row.style.opacity = '0'; row.style.transform = 'translateY(10px)'; row.style.transition = 'opacity 0.35s ease, transform 0.35s ease'; }
-        const ballsHtml = nums.map(n => `<div class="${ballClass(n)}">${n}</div>`).join('');
-        row.innerHTML = `<div class="set-label">세트 ${labels[i]}</div><div class="balls">${ballsHtml}</div>`;
+        if (animate) { row.style.opacity = '0'; row.style.transform = 'translateY(10px)'; row.style.transition = 'all 0.35s ease'; }
+        row.innerHTML = `<div class="set-label">세트 ${labels[i]}</div><div class="balls">${nums.map(n => `<div class="${ballClass(n)}">${n}</div>`).join('')}</div>`;
         container.appendChild(row);
         if (animate) setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'translateY(0)'; }, i * 80);
       });
     }
-
     function generate() {
       if (isUsedThisWeek()) return;
-      const sets = [];
-      for (let i = 0; i < 5; i++) sets.push(generateSet());
-      renderSets(sets, true);
-      saveNums(sets);
-      updateBtn();
+      const sets = Array.from({length: 5}, generateSet);
+      renderSets(sets, true); saveNums(sets); updateBtn();
     }
-
     const saved = getSavedNums();
     if (saved) renderSets(saved, false);
     updateBtn();

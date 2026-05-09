@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="로또번호">
   <title>🍀 로또 번호 생성기</title>
-  <link rel="apple-touch-icon" href="icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,23 +19,25 @@
     .set-label { font-size: 12px; font-weight: 500; color: #aaa; min-width: 38px; }
     .balls { display: flex; gap: 7px; flex-wrap: wrap; }
     
-    /* 공 스타일 수정 */
     .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-    .ball.c1 { background: #fbc400; } /* 1~10: 노랑 */
-    .ball.c2 { background: #69c8f2; } /* 11~20: 파랑 */
-    .ball.c3 { background: #ff7272; } /* 21~30: 빨강 */
-    .ball.c4 { background: #aaaaaa; } /* 31~40: 회색 */
-    .ball.c5 { background: #b0d840; } /* 41~45: 초록 */
+    .ball.c1 { background: #fbc400; }
+    .ball.c2 { background: #69c8f2; }
+    .ball.c3 { background: #ff7272; }
+    .ball.c4 { background: #aaaaaa; }
+    .ball.c5 { background: #b0d840; }
 
-    .btn-group { display: flex; flex-direction: column; gap: 8px; }
+    .btn-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
     .gen-btn { width: 100%; padding: 1rem; background: #1a1a1a; color: #fff; border: none; border-radius: 14px; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 1px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
     .gen-btn:active:not(:disabled) { transform: scale(0.97); opacity: 0.85; }
     .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     
-    .reset-btn { width: 100%; padding: 0.6rem; background: none; color: #bbb; border: 1px solid #ddd; border-radius: 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .reset-btn:hover { background: #eee; color: #666; }
+    .reset-btn { width: 100%; padding: 0.6rem; background: none; color: #bbb; border: 1px solid #ddd; border-radius: 10px; font-size: 11px; cursor: pointer; }
 
-    .hint { font-size: 11px; color: #bbb; text-align: center; margin-top: 1rem; line-height: 1.7; }
+    /* 로직 설명 토글 스타일 */
+    .logic-container { text-align: center; margin-top: 10px; }
+    .logic-toggle { background: none; border: none; color: #ccc; font-size: 11px; text-decoration: underline; cursor: pointer; margin-bottom: 8px; }
+    .logic-content { display: none; background: #ecece7; padding: 12px; border-radius: 10px; font-size: 11px; color: #888; line-height: 1.6; text-align: left; }
+    
     .week-info { font-size: 11px; color: #bbb; text-align: center; margin-top: 0.5rem; min-height: 1.2em; }
   </style>
 </head>
@@ -48,17 +49,27 @@
     
     <div class="btn-group">
       <button class="gen-btn" id="genBtn" onclick="generate()">번호 생성하기</button>
-      <button class="reset-btn" id="resetBtn" onclick="resetData()">데이터 초기화</button>
+      <button class="reset-btn" onclick="resetData()">데이터 초기화</button>
     </div>
 
-    <div class="hint">
-      노랑(1-10) · 파랑(11-20) · 빨강(21-30) · 회색(31-40) · 초록(41-45)<br>
-      구간 분산 · 홀짝 균형 · 합계 100~170
+    <div class="logic-container">
+      <button class="logic-toggle" onclick="toggleLogic()">상세 로직 보기</button>
+      <div id="logicContent" class="logic-content">
+        • <b>구간 분산</b>: 1~15, 16~30, 31~45 구간별 최소 1개 포함<br>
+        • <b>홀짝 균형</b>: 홀수와 짝수의 비율을 2:4~4:2로 유지<br>
+        • <b>합계 필터</b>: 선택된 6개 번호의 총합을 100~170 사이로 제한
+      </div>
     </div>
+    
     <div class="week-info" id="weekInfo"></div>
   </div>
 
   <script>
+    function toggleLogic() {
+      const content = document.getElementById('logicContent');
+      content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+    }
+
     function getWeekKey() {
       const now = new Date();
       const sunday = new Date(now);
@@ -113,25 +124,17 @@
           if (!nums.includes(n)) nums.push(n);
         }
         nums.sort((a, b) => a - b);
-        
-        // 필터 1: 구간 분산 (1-15, 16-30, 31-45 각 1개 이상)
         if (!nums.some(n => n >= 1 && n <= 15)) continue;
         if (!nums.some(n => n >= 16 && n <= 30)) continue;
         if (!nums.some(n => n >= 31 && n <= 45)) continue;
-        
-        // 필터 2: 홀짝 균형 (홀수 2~4개)
         let odd = nums.filter(n => n % 2 === 1).length;
         if (odd < 2 || odd > 4) continue;
-        
-        // 필터 3: 합계 (100~170)
         let sum = nums.reduce((a, b) => a + b, 0);
         if (sum < 100 || sum > 170) continue;
-        
         return nums;
       }
     }
 
-    // 색상 클래스 분류 수정 (10단위)
     function ballClass(n) {
       if (n <= 10) return 'ball c1';
       if (n <= 20) return 'ball c2';
